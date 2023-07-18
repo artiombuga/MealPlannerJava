@@ -1,0 +1,44 @@
+type: code
+files:
+- name: src/Main.java
+  visible: true
+  highlight_level: NONE
+  text: "interface UserDao {\n    // write your code here\n}\n\n/* Do not change code\
+    \ below */\nclass UserDaoImpl implements UserDao {\n    private final List<User>\
+    \ users;\n\n    public UserDaoImpl() {\n        users = new ArrayList<>();\n \
+    \   }\n\n    @Override\n    public void add(User user) {\n        users.add(user);\n\
+    \        System.out.println(user + \", added\");\n    }\n\n    @Override\n   \
+    \ public User get(int id) {\n        User found = findById(id);\n        if (found\
+    \ == null) {\n            System.out.println(\"User : id \" + id + \", not found\"\
+    );\n            return null;\n        }\n        System.out.println(found + \"\
+    , found\");\n        return new User(found.getId(), found.getName());\n\n    }\n\
+    \n    @Override\n    public void update(User user) {\n        User found = findById(user.getId());\n\
+    \        if (found != null) {\n            found.setName(user.getName());\n  \
+    \          System.out.println(found + \", updated\");\n        } else {\n    \
+    \        System.out.println(\"User \" + user.getId() + \", not found\");\n   \
+    \     }\n\n    }\n\n    @Override\n    public void delete(int id) {\n        User\
+    \ found = findById(id);\n        if (found != null) {\n            users.remove(found);\n\
+    \            System.out.println(found + \", deleted\");\n        } else {\n  \
+    \          System.out.println(\"User \" + id + \", not found\");\n        }\n\n\
+    \    }\n\n    private User findById(int id) {\n        for (User user : users)\
+    \ {\n            if (id == user.getId()) {\n                return user;\n   \
+    \         }\n        }\n        return null;\n    }\n}\n\npublic class Main {\n\
+    \    public static void main(String[] args) {\n        Scanner scanner = new Scanner(System.in);\
+    \ \n        UserDao userDao = new UserDaoImpl();\n\n        int id = scanner.nextInt();\
+    \ \n        String name = scanner.next();\n        userDao.add(new User(id, name));\n\
+    \        User firstUser = userDao.get(id);\n\n        id = scanner.nextInt();\
+    \ \n        name = scanner.next();\n        userDao.add(new User(id, name));\n\
+    \        User secondUser = userDao.get(id);\n\n        User noUser = userDao.get(10);\n\
+    \n        id = scanner.nextInt(); \n        String newName = scanner.next();\n\
+    \        User updateUser = userDao.get(id);\n        updateUser.setName(newName);\n\
+    \        userDao.update(updateUser);\n\n        System.out.println(userDao.get(id));\n\
+    \        System.out.println(secondUser);\n\n        userDao.delete(firstUser.id);\n\
+    \    }\n}"
+  learner_created: false
+feedback_link: https://hyperskill.org/learn/step/20195#comment
+status: Solved
+feedback:
+  message: <html>Correct solution</html>
+  time: "Mon, 17 Jul 2023 13:00:21 UTC"
+record: -1
+submission_language: java11

@@ -1,0 +1,21 @@
+<h2>DAO pattern interface declaration</h2>
+<div class="step-text">
+<p></p>
+<p>Suppose you have the <code class="language-java">User</code> class:</p>
+<pre><code class="language-java">class User {
+    public String name;
+    public int id;
+
+    // constructor
+    // getters and setters
+    // toString
+}</code></pre>
+<p>Use the DAO pattern and create the <code class="language-java">UserDao</code> interface which implements the following methods:</p>
+<ul>
+<li><code class="language-java">add</code> which gets <code class="language-java">User</code> and returns <code class="language-java">void</code></li>
+<li><code class="language-java">get</code> which gets <code class="language-java">int</code> and returns <code class="language-java">User</code></li>
+<li><code class="language-java">update</code> which gets <code class="language-java">User</code> and returns <code class="language-java">void</code></li>
+<li><code class="language-java">delete</code> which gets <code class="language-java">int</code> and return <code class="language-java">void</code></li>
+</ul>
+<p>Do not change the provided code of the classes. You only need to fix the lines marked by comments <em>/* write your code here */.</em></p><br><b>Sample Input:</b><br><pre><code class="language-no-highlight">0<br>John<br>1<br>Jack<br>0<br>Jim</code></pre><br><b>Sample Output:</b><br><pre><code class="language-no-highlight">User : id 0, name : John, added<br>User : id 0, name : John, found<br>User : id 1, name : Jack, added<br>User : id 1, name : Jack, found<br>User : id 10, not found<br>User : id 0, name : John, found<br>User : id 0, name : Jim, updated<br>User : id 0, name : Jim, found<br>User : id 0, name : Jim<br>User : id 1, name : Jack<br>User : id 0, name : Jim, deleted</code></pre><br><br><br><font color="gray">Memory limit: 256 MB</font><br><font color="gray">Time limit: 8 seconds</font><br><br>
+</div>

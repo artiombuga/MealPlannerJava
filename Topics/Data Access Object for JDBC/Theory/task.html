@@ -1,0 +1,239 @@
+<h2>Data Access Object for JDBC</h2>
+<div class="step-text">
+<p>Almost all software applications use foreign data taken from different sources. These sources can be databases, files, and many others. Data from these sources can be accessed, modified, and saved in different ways specific to each source.</p><p><strong>Data Access Object</strong> (<strong>DAO</strong>) is a <strong>structural pattern</strong> that declares an interface to access and modify data. The interface may contain a variety of methods for dealing with data. Some of the most popular methods are <code class="language-java">read</code>, <code class="language-java">delete</code>, <code class="language-java">create</code>, and <code class="language-java">update</code> (<strong>CRUD</strong> methods). Once an interface is declared, you need to create an implementation for each specific data source. An implementation hides the differences in data access methods under the hood. Client code uses the DAO interface instead of a specific implementation. Thus, the client code knows nothing about the underlying data source. That allows you to work with any data source in the application code just by choosing the right implementation.</p><h5 id="dao-with-an-in-memory-data-source">DAO with an in-memory data source</h5><p>Imagine we have a class <code class="language-java">Developer</code>. This application will work with <code class="language-java">Developer</code>'s objects:</p><pre><code class="language-java">public class Developer {
+    private int id;
+    private String name;
+
+    // constructor
+    // getters and setters
+
+    @Override
+    public String toString() {
+        return "Developer: [Id " + id
+                + ", Name : " + name + " ]";
+    }
+}
+</code></pre><p>For a <code class="language-java">Developer</code>'s object let's create a DAO interface:</p><pre><code class="language-java">public interface DeveloperDao {
+    List&lt;Developer&gt; findAll();
+    Developer findById(int id);
+    void add(Developer developer);
+    void update(Developer developer);
+    void deleteById(int id);
+}</code></pre><p>The DAO interface defines abstract methods that perform the <code class="language-java">create</code>, <code class="language-java">read</code>, <code class="language-java">update</code> and <code class="language-java">delete</code> operations on the created objects of the class. The interface has a high level of abstraction. There are no details related to a particular data source.</p><p>Let's create a class <code class="language-java">InMemoryDeveloperDao</code> implementing the <code class="language-java">DeveloperDao</code> interface:</p><pre><code class="language-java">public class InMemoryDeveloperDao implements DeveloperDao {
+
+    // list is working as a data source
+    private final List&lt;Developer&gt; developers;
+
+    public InMemoryDeveloperDao() {
+        this.developers = new ArrayList&lt;&gt;();
+        System.out.println("Developers data structure created");
+    }
+
+    @Override
+    public List&lt;Developer&gt; findAll() {
+        return new ArrayList&lt;&gt;(developers);
+    }
+
+    @Override
+    public Developer findById(int id) {
+        Developer found = findByIdInternal(id);
+        if (found == null) {
+            System.out.println("Developer: Id " + id + ", not found");
+            return null;
+        }
+        System.out.println("Developer: Id " + id + ", found");
+        return new Developer(found.getId(), found.getName());
+    }
+
+    @Override
+    public void add(Developer developer) {
+        developers.add(developer);
+        System.out.println("Developer: Id " + developer.getId() +
+                ", name: " + developer.getName() + " added");
+    }
+
+    @Override
+    public void update(Developer developer) {
+        Developer found = findByIdInternal(developer.getId());
+        if (found != null) {
+            found.setName(developer.getName());
+            System.out.println("Developer: Id " + developer.getId() + ", updated");
+        } else {
+            System.out.println("Developer: Id " + developer.getId() + ", not found");
+        }
+    }
+
+    @Override
+    public void deleteById(int id) {
+        Developer found = findByIdInternal(id);
+        if (found != null) {
+            developers.remove(found);
+            System.out.println("Developer: Id " + id + ", deleted");
+        } else {
+            System.out.println("Developer: Id " + id + ", not found");
+        }
+    }
+
+    private Developer findByIdInternal(int id) {
+        for (Developer developer : developers) {
+            if (id == developer.getId()) {
+                return developer;
+            }
+        }
+
+        return null;
+    }
+}</code></pre><p>The <code class="language-java">InMemoryDeveloperDao</code><em> </em>class implements all the methods needed to create, update, read and delete <code class="language-java">Developer</code> objects. A <code class="language-java">List</code> of objects is used as a simple data source.</p><p></p><div class="alert alert-primary"><p>We return a copy of the list for the <code class="language-java">findAll</code> method and a copy of the <code class="language-java">Developer</code> object for the <code class="language-java">findById</code> method. This helps us to encapsulate the data and protect the original data against modification. To modify the object, the <code class="language-java">update</code> method of the interface should be used.</p></div><p></p><p>Let's look at an example of client code where <code class="language-java">InMemoryDeveloperDao</code> is used to demonstrate the Data Access Object pattern usage.</p><pre><code class="language-java">public class DaoPatternDemo {
+    public static void main(String[] args) {
+        // Initialize InMemoryDeveloperDao
+        DeveloperDao developerDao = new InMemoryDeveloperDao();
+
+        // add the data
+        developerDao.add(new Developer(
+                 0, "Ada")); // Developer: Id 0, name: Ada added
+        developerDao.add(new Developer(
+                 1, "Rob")); // Developer: Id 1, name: Rob added
+
+        // print all developers
+        for (Developer developer : developerDao.findAll()) {
+            System.out.println(  // Developer: [Id 0, Name : Ada ]
+                    developer);  // Developer: [Id 1, Name : Rob ]
+        }
+
+        // find developer by id
+        developerDao.findById(0);  // Developer: Id 0, found
+        developerDao.findById(10); // Developer: Id 10, not found
+
+        // update developer data
+        Developer developer = developerDao.findById(0); // Developer: Id 0, found
+        developer.setName("Adelaida");
+        developerDao.update(developer); // Developer: Id 0, updated
+
+        //delete the developer
+        developerDao.deleteById(0); // Developer: Id 0, deleted
+        developerDao.deleteById(10); // Developer: Id 10 not found
+        developerDao.findById(0); // Developer: Id 0, not found
+    }
+
+}</code></pre><p>This example shows us the behavior of the DAO pattern. In this case, the main method simply uses the instance <code class="language-java">DeveloperDao</code> to perform CRUD operations on multiple <code class="language-java">Developer</code> objects. The interface method signatures are independent of the contents of the <code class="language-java">Developer</code><em> </em>class. If you add an additional field to the <code class="language-java">Developer</code><em> </em>class, there will be no need to make changes to <code class="language-java">DeveloperDao</code><em> </em>or the classes that use it. The most important aspect of this process is how <code class="language-java">DeveloperDao</code><em> </em>hides all low-level information about how objects are stored, updated, and removed.</p><p>In production applications, no one saves data in a <code class="language-java">List</code> or other <code class="language-java">Collections</code>. Let's look at how the DAO pattern works with databases.</p><h5 id="dao-with-jdbc-implementation">DAO with JDBC implementation</h5><p>In this part, we are going to create a data layer based on the basic <strong>JDBC API</strong>. To access a database using JDBC, we use the JDBC URL of the database to be connected. Let's introduce the helper <code class="language-java">DbClient</code> class, which executes SQL queries:</p><pre><code class="language-java">public class DbClient {
+    private final DataSource dataSource;
+
+    public DbClient(DataSource dataSource) {
+        this.dataSource = dataSource;
+    }
+
+    public void run(String str) {
+        try (Connection con = dataSource.getConnection(); // Statement creation
+             Statement statement = con.createStatement()
+        ) {
+            statement.executeUpdate(str); // Statement execution
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public Developer select(String query) {
+        List&lt;Developer&gt; developers = selectForList(query);
+        if (developers.size() == 1) {
+            return developers.get(0);
+        } else if (developers.size() == 0) {
+            return null;
+        } else {
+            throw new IllegalStateException("Query returned more than one object");
+        }
+    }
+
+    public List&lt;Developer&gt; selectForList(String query) {
+        List&lt;Developer&gt; developers = new ArrayList&lt;&gt;();
+
+        try (Connection con = dataSource.getConnection();
+             Statement statement = con.createStatement();
+             ResultSet resultSetItem = statement.executeQuery(query)
+        ) {
+            while (resultSetItem.next()) {
+                // Retrieve column values
+                int id = resultSetItem.getInt("id");
+                String name = resultSetItem.getString("name");
+                Developer developer = new Developer(id, name);
+                developers.add(developer);
+            }
+
+            return developers;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return developers;
+    }
+}</code></pre><p>We use the <code class="language-java">run</code> method to create and update data in database. The <code class="language-java">select</code> method is used for selecting data.</p><p>It is possible to reuse a model class that represents a single row of the <code class="language-java">Developer</code><em> </em>table of the developer database. Let's use our <code class="language-java">Developer</code><em> </em>DAO and the <code class="language-java">DeveloperDao</code><em> </em>interface we wrote earlier.</p><pre><code class="language-java">public class Developer { ... }
+
+public interface DeveloperDao { ... }</code></pre><p>Now we update the functionality and create all the <code class="language-java">DeveloperDao</code><em> </em>interface methods in the <code class="language-java">DbDeveloperDao</code><em> </em>class with the help of the <code class="language-java">DbClient</code><em> </em>class methods.</p><pre><code class="language-java">public class DbDeveloperDao implements DeveloperDao {
+    private static final String CONNECTION_URL = "jdbc:sqlite:developer.db";
+
+    private static final String CREATE_DB = "CREATE TABLE IF NOT EXISTS DEVELOPER(" +
+            "id INTEGER PRIMARY KEY," +
+            "name TEXT NOT NULL);";
+    private static final String SELECT_ALL = "SELECT * FROM DEVELOPER";
+    private static final String SELECT = "SELECT * FROM DEVELOPER WHERE id = %d";
+    private static final String INSERT_DATA = "INSERT INTO DEVELOPER VALUES (%d , '%s')";
+    private static final String UPDATE_DATA = "UPDATE DEVELOPER SET name " +
+            "= '%s' WHERE id = %d";
+    private static final String DELETE_DATA = "DELETE FROM DEVELOPER WHERE id = %d";
+
+    private final DbClient dbClient;
+
+    public DbDeveloperDao() {
+        SQLiteDataSource dataSource = new SQLiteDataSource();
+        dataSource.setUrl(CONNECTION_URL);
+
+        dbClient = new DbClient(dataSource);
+        dbClient.run(CREATE_DB);
+        System.out.println("Developers data structure create");
+    }
+
+    @Override
+    public void add(Developer developer) {
+        dbClient.run(String.format(
+                INSERT_DATA, developer.getId(), developer.getName()));
+        System.out.println("Developer: Id " + developer.getId() +
+                ", name: " + developer.getName() + " added");
+    }
+
+    @Override
+    public List&lt;Developer&gt; findAll() {
+        return dbClient.selectForList(SELECT_ALL);
+    }
+
+    @Override
+    public Developer findById(int id) {
+        Developer developer = dbClient.select(String.format(SELECT, id));
+
+        if (developer != null) {
+            System.out.println("Developer: Id " + id + ", found");
+            return developer;
+        } else {
+            System.out.println("Developer: Id " + id + ", not found");
+            return null;
+        }
+    }
+
+    @Override
+    public void update(Developer developer) {
+        dbClient.run(String.format(
+                UPDATE_DATA, developer.getName(), developer.getId()));
+        System.out.println("Developer: Id " + developer.getId() + ", updated");
+    }
+
+    @Override
+    public void deleteById(int id) {
+        dbClient.run(String.format(DELETE_DATA, id));
+        System.out.println("Developer: Id " + id + ", deleted");
+    }
+}</code></pre><p>SQL code in this class was written as <code class="language-java">Strings</code> and used in the <code class="language-java">DbClient</code><em> </em>class methods as parameters.</p><p>And finally, a test harness for all classes and methods in the DAO package. This is just a simple class with a main method that can be run as a Java application in the command console or in the IDE. All the code in the <code class="language-java">DaoPatternDbDemo</code><em> </em>is the same as in the <code class="language-java">DaoPatternDemo</code> class.</p><pre><code class="language-java">public class DaoPatternDbDemo {
+    public static void main(String[] args) {
+        DeveloperDao developerDao = new DbDeveloperDao(); // Developers data structure create
+
+        // use the code from the DaoPatternDemo class
+    }
+}</code></pre><p>As a result, the <code class="language-java">Developer</code> object was successfully created (the <code class="language-java">id</code> was set by DAO). Methods can find a <code class="language-java">Developer</code> by their <code class="language-java">id</code>, update their <code class="language-java">name</code>, list all the <code class="language-java">Developers</code> and delete a <code class="language-java">Developer</code> by <code class="language-java">id</code>.</p><p><code class="language-java">DbDeveloperDao</code> class for working with this type of data store. The rest of our application doesn't require changes and works as intended.</p><h5 id="conclusion">Conclusion</h5><p>DAO declares an interface for the access mechanism required to work with a data source. The data source can be anything, for example, a simple file, in-memory data, as well as various databases that can be used with the help of JDBC API.</p><p>DAO completely hides the implementation details of the data source from its clients. As the interface provided by DAO to its clients doesn't change when the underlying implementation of the data source changes, this pattern allows DAO to adapt to different storage schemes without affecting clients or business components. The DAO pattern does not specify which methods we should describe in the interface and implement accordingly.</p><p>Essentially, DAO acts as an adapter between the application code and the data source. This allows you to customize the implementation of working with the database without changes in other modules or completely replace one implementation with another.</p>
+</div>
